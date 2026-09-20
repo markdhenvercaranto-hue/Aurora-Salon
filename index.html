@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AURORA — Modern Hair Salon</title>
+    <link rel="stylesheet" href="salon.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">AURORA</div>
+        <div class="nav-links">
+            <a href="#services">Services</a>
+            <a href="#gallery">Lookbook</a>
+            <a href="#about">Our Team</a>
+        </div>
+        <a href="#book" class="cta-btn small">Book Now</a>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Sculpting hair into wearable art.</h1>
+            <p>Experience premium styling, tailored coloring, and luxury hair treatments designed to elevate your natural confidence.</p>
+            <a href="#book" class="cta-btn large">Reserve an Experience</a>
+        </div>
+        <div class="hero-image">
+            <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80" alt="Luxury Salon Interior">
+        </div>
+    </header>
+
+    <section id="services" class="services-section">
+        <div class="section-title">
+            <span>Our Expertise</span>
+            <h2>Signature Services</h2>
+        </div>
+        
+        <div class="services-grid">
+            <div class="service-card">
+                <h3>Design & Cut</h3>
+                <p class="price">from $85</p>
+                <p class="desc">Includes a tailored consultation, relaxing shampoo ritual, precision cut, and signature blowout.</p>
+            </div>
+            <div class="service-card">
+                <h3>Aesthetic Color</h3>
+                <p class="price">from $160</p>
+                <p class="desc">Bespoke balayage, highlights, or full-color transformations using organic, protective formulas.</p>
+            </div>
+            <div class="service-card">
+                <h3>Revitalizing Therapy</h3>
+                <p class="price">from $70</p>
+                <p class="desc">Deep-conditioning molecular treatments designed to restore shine, strength, and structural health.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="bookings" class="bookings-section">
+        <div class="section-title">
+            <span>Your Appointments</span>
+            <h2>Bookings Dashboard</h2>
+        </div>
+        
+        <div class="dashboard-container">
+            <div class="dashboard-stats">
+                <div class="stat-card">
+                    <span class="stat-label">Total Bookings</span>
+                    <h3 class="stat-number" id="totalBookingsCount">0</h3>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Upcoming</span>
+                    <h3 class="stat-number" id="upcomingBookingsCount">0</h3>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Most Popular</span>
+                    <h3 class="stat-number" id="popularService">—</h3>
+                </div>
+            </div>
+
+            <div class="bookings-list-container">
+                <div class="bookings-filter">
+                    <button class="filter-btn active" data-filter="all">All Bookings</button>
+                    <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+                    <button class="filter-btn" data-filter="past">Past</button>
+                </div>
+                
+                <div id="bookingsList" class="bookings-list">
+                    <!-- Bookings will be dynamically added here -->
+                </div>
+                
+                <div id="noBookingsMessage" class="no-bookings">
+                    <p>No bookings yet. <a href="#book" class="cta-btn small">Book now!</a></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeBooking()">&times;</span>
+            <h2>Reserve Your Experience</h2>
+            <p>Select your preferred service and time.</p>
+            
+            <form id="salonBookingForm" onsubmit="handleBooking(event)">
+                <div class="form-group">
+                    <label for="customerName">Full Name</label>
+                    <input type="text" id="customerName" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="service">Select Service</label>
+                    <select id="service" required>
+                        <option value="cut">Design & Cut — $85</option>
+                        <option value="color">Aesthetic Color — $160</option>
+                        <option value="therapy">Revitalizing Therapy — $70</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="date">Preferred Date</label>
+                    <input type="date" id="date" required>
+                </div>
+                <div class="form-group">
+                    <label for="time">Preferred Time</label>
+                    <input type="time" id="time" required>
+                </div>
+                <button type="submit" class="cta-btn large form-submit">Confirm Booking</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmationModal" class="confirmation-modal">
+        <div class="confirmation-content">
+            <div class="confirmation-icon">✨</div>
+            <h2 id="confirmationTitle">Appointment Confirmed!</h2>
+            <div id="confirmationDetails" class="confirmation-details">
+                <!-- Details will be filled dynamically -->
+            </div>
+            <p class="confirmation-message">We look forward to styling you!</p>
+            <button onclick="closeConfirmation()" class="cta-btn large">Done</button>
+        </div>
+    </div>
+
+    <script src="booking-logger.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="salon.js"></script>
+</body>
+</html>
