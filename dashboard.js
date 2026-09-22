@@ -1,185 +1,128 @@
-// Dashboard functionality for displaying and managing bookings
+function renderDashboard() {
+    const list = document.getElementById('bookingsList');
+    const emptyState = document.getElementById('emptyBookingsMessage');
+    const upcomingCount = document.getElementById('upcomingBookingsCount');
+    const pastCount = document.getElementById('pastBookingsCount');
 
-let currentFilter = 'all';
+    if (!list || !emptyState || !upcomingCount || !pastCount) return;
 
-// Service display names
-const serviceNames = {
-    'cut': 'Design & Cut',
-    'color': 'Aesthetic Color',
-    'therapy': 'Revitalizing Therapy'
-};
-
-// Initialize dashboard when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('📱 Dashboard initializing...');
-    
-    // Check if localStorage is available
-    const storageOK = bookingLogger.isLocalStorageAvailable();
-    if (!storageOK) {
-        console.error('❌ WARNING: localStorage is not available. Bookings will not persist.');
-        alert('⚠️ Warning: Browser storage is not available. Bookings may not persist between sessions.');
-    } else {
-        console.log('✅ Browser storage is available and working');
+    const sessionUser = bookingLogger.getCurrentUser();
+    if (!sessionUser) {
+        list.innerHTML = '';
+        emptyState.style.display = 'block';
+        emptyState.textContent = 'Please sign in to view your bookings.';
+        upcomingCount.textContent = '0';
+        pastCount.textContent = '0';
+        return;
     }
-    
-    // Load and display bookings
-    const allBookings = bookingLogger.getAllBookings();
-    console.log('🎯 Dashboard loaded. Found ' + allBookings.length + ' bookings');
-    console.log('Bookings data:', allBookings);
-    
-    updateDashboard();
-    setupFilterButtons();
-    
-    // Auto-save every 5 seconds as backup
-    setInterval(() => {
-        const currentBookings = bookingLogger.getBookings();
-        if (currentBookings.length > 0) {
-            bookingLogger.saveBookings(currentBookings);
-        }
-    }, 5000);
-});
 
-// Setup filter button click handlers
-function setupFilterButtons() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    filterButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all buttons
-            filterButtons.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
-            btn.classList.add('active');
-            // Update filter
-            currentFilter = btn.dataset.filter;
-            renderBookings();
+    const currentClient = sessionUser.name || bookingLogger.getCurrentClientName();
+    const visibleBookings = bookingLogger.getVisibleBookingsForCurrentUser();
+    const filteredBookings = (() => {
+        if (sessionUser.role === bookingLogger.ROLES.ADMIN) {
+            return visibleBookings;
+        }
+
+        if (sessionUser.role === bookingLogger.ROLES.CLIENT) {
+            if (!currentClient) return visibleBookings;
+            return visibleBookings.filter((booking) => (booking.clientName || '').toLowerCase() === currentClient.toLowerCase() || (booking.email || '').toLowerCase() === (sessionUser.email || '').toLowerCase());
+        }
+
+        return visibleBookings;
+    })();
+
+    const now = new Date();
+    const upcoming = [];
+    const past = [];
+
+    filteredBookings.forEach((booking) => {
+        const bookingDate = new Date(`${booking.date}T${booking.time || '00:00'}`);
+        if (bookingDate >= now) {
+            upcoming.push(booking);
+        } else {
+            past.push(booking);
+        }
+    });
+
+    upcomingCount.textContent = String(upcoming.length);
+    pastCount.textContent = String(past.length);
+
+    if (!filteredBookings.length) {
+        list.innerHTML = '';
+        emptyState.style.display = 'block';
+        emptyState.textContent = sessionUser.role === bookingLogger.ROLES.ADMIN
+            ? 'No bookings found for this search.'
+            : 'No appointments found for this client yet.';
+        return;
+    }
+
+    emptyState.style.display = 'none';
+    const sortedBookings = [...filteredBookings].sort((a, b) => new Date(`${a.date}T${a.time || '00:00'}`) - new Date(`${b.date}T${b.time || '00:00'}`));
+
+    list.innerHTML = sortedBookings.map((booking) => {
+        const bookingDate = new Date(`${booking.date}T${booking.time || '00:00'}`);
+        const isUpcoming = bookingDate >= now;
+        const statusLabel = isUpcoming ? 'Upcoming' : 'Past';
+        const clientDisplayName = booking.clientName || booking.name || 'Client';
+        const sessionUser = bookingLogger.getCurrentUser();
+        const canEdit = sessionUser && bookingLogger.hasPermission('edit_booking', booking);
+        const canDelete = sessionUser && bookingLogger.hasPermission('delete_booking', booking);
+
+        return `
+            <article class="booking-card ${isUpcoming ? 'upcoming' : 'past'}">
+                <div class="booking-top-row">
+                    <div>
+                        <p class="booking-id">${booking.id}</p>
+                        <h3>${clientDisplayName}</h3>
+                    </div>
+                    <span class="booking-status ${isUpcoming ? 'upcoming' : 'past'}">${statusLabel}</span>
+                </div>
+                <div class="booking-details">
+                    <span>${booking.service}</span>
+                    <span>${bookingLogger.formatDate(booking.date)}</span>
+                    <span>${booking.time || 'Flexible time'}</span>
+                    ${booking.phone ? `<span>${booking.phone}</span>` : ''}
+                    ${booking.email ? `<span>${booking.email}</span>` : ''}
+                </div>
+                <div class="booking-actions">
+                    ${canEdit ? '<button type="button" class="mini-btn edit-booking" data-id="' + booking.id + '">Edit</button>' : ''}
+                    ${canDelete ? '<button type="button" class="mini-btn cancel-booking" data-id="' + booking.id + '">Cancel</button>' : ''}
+                </div>
+            </article>
+        `;
+    }).join('');
+
+    document.querySelectorAll('.edit-booking').forEach((button) => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            const booking = filteredBookings.find((item) => String(item.id) === String(id));
+            if (booking && bookingLogger.hasPermission('edit_booking', booking)) {
+                window.openBookingModal(booking);
+            } else {
+                alert('You are not authorized to edit this appointment.');
+            }
+        });
+    });
+
+    document.querySelectorAll('.cancel-booking').forEach((button) => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-id');
+            const booking = filteredBookings.find((item) => String(item.id) === String(id));
+            if (!booking || !bookingLogger.hasPermission('delete_booking', booking)) {
+                alert('You are not authorized to cancel this appointment.');
+                return;
+            }
+
+            showCustomConfirm('Cancel this appointment?', () => {
+                bookingLogger.deleteBooking(id);
+                renderDashboard();
+            });
         });
     });
 }
 
-// Update entire dashboard
-function updateDashboard() {
-    updateStats();
-    renderBookings();
+function initializeDashboard() {
+    renderDashboard();
 }
 
-// Update statistics cards
-function updateStats() {
-    const bookings = bookingLogger.getAllBookings();
-    const stats = bookingLogger.getStatistics();
-    
-    // Total bookings
-    document.getElementById('totalBookingsCount').textContent = stats.totalBookings;
-    
-    // Upcoming bookings
-    document.getElementById('upcomingBookingsCount').textContent = stats.upcomingBookings.length;
-    
-    // Most popular service
-    const byService = stats.byService;
-    let popularService = '—';
-    let maxCount = 0;
-    
-    for (const [service, count] of Object.entries(byService)) {
-        if (count > maxCount) {
-            maxCount = count;
-            popularService = serviceNames[service] || service;
-        }
-    }
-    document.getElementById('popularService').textContent = popularService;
-}
-
-// Render bookings list based on current filter
-function renderBookings() {
-    const bookings = bookingLogger.getAllBookings();
-    const bookingsList = document.getElementById('bookingsList');
-    const noBookingsMessage = document.getElementById('noBookingsMessage');
-    
-    // Filter bookings
-    let filteredBookings = bookings;
-    
-    if (currentFilter === 'upcoming') {
-        filteredBookings = bookingLogger.getUpcomingBookings(bookings);
-    } else if (currentFilter === 'past') {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        filteredBookings = bookings.filter(booking => new Date(booking.date) < today);
-    }
-    
-    // Clear current list
-    bookingsList.innerHTML = '';
-    
-    // Show/hide no bookings message
-    if (filteredBookings.length === 0) {
-        bookingsList.style.display = 'none';
-        noBookingsMessage.style.display = currentFilter === 'all' && bookings.length === 0 ? 'block' : 'none';
-        return;
-    }
-    
-    bookingsList.style.display = 'flex';
-    noBookingsMessage.style.display = 'none';
-    
-    // Sort bookings by date
-    const sortedBookings = filteredBookings.sort((a, b) => new Date(a.date) - new Date(b.date));
-    
-    // Create booking cards
-    sortedBookings.forEach(booking => {
-        const bookingCard = createBookingCard(booking);
-        bookingsList.appendChild(bookingCard);
-    });
-}
-
-// Create a single booking card element
-function createBookingCard(booking) {
-    const card = document.createElement('div');
-    card.className = 'booking-card';
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const bookingDate = new Date(booking.date);
-    const isPast = bookingDate < today;
-    
-    if (isPast) {
-        card.classList.add('past');
-    }
-    
-    const serviceDisplayName = serviceNames[booking.service] || booking.service;
-    const formattedDate = new Date(booking.date).toLocaleDateString('en-US', {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-    
-    const statusClass = isPast ? 'past' : '';
-    
-    card.innerHTML = `
-        <div class="booking-details">
-            <div class="booking-id">${booking.id}</div>
-            <div class="booking-customer-name">${booking.name || 'Guest'}</div>
-            <div class="booking-service">${serviceDisplayName}</div>
-            <div class="booking-info">
-                <span>📅 ${formattedDate}</span>
-                <span>🕐 ${booking.time}</span>
-            </div>
-        </div>
-        <div class="booking-actions">
-            <span class="booking-status ${statusClass}">${isPast ? 'Completed' : 'Confirmed'}</span>
-            <button class="btn-delete" onclick="deleteBookingHandler('${booking.id}')">Delete</button>
-        </div>
-    `;
-    
-    return card;
-}
-
-// Handle booking deletion
-function deleteBookingHandler(bookingId) {
-    if (confirm('Are you sure you want to delete this booking?')) {
-        bookingLogger.deleteBooking(bookingId);
-        updateDashboard();
-    }
-}
-
-// Listen for bookings changes (when a new booking is added)
-// This will automatically update the dashboard
-const observer = setInterval(() => {
-    const currentBookings = bookingLogger.getAllBookings();
-    // The dashboard will refresh when renderBookings is called after new bookings
-}, 500);
+document.addEventListener('DOMContentLoaded', initializeDashboard);

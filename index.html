@@ -16,14 +16,28 @@
             <a href="#gallery">Lookbook</a>
             <a href="#about">Our Team</a>
         </div>
-        <a href="#book" class="cta-btn small">Book Now</a>
+        <div class="nav-actions">
+            <div class="auth-toggle-group">
+                <button type="button" class="auth-link admin-login-link" id="adminLoginToggle">
+                    <span aria-hidden="true">▣</span>
+                    Admin Login
+                </button>
+                <button type="button" class="auth-link client-login-link" id="clientLoginToggle">
+                    <span aria-hidden="true">◌</span>
+                    Client Login
+                </button>
+                <button type="button" class="header-logout hidden" id="headerLogoutBtn">
+                    Logout
+                </button>
+            </div>
+            <button type="button" class="cta-btn small book-now-btn">Book Now</button>
+        </div>
     </nav>
 
     <header class="hero">
         <div class="hero-content">
             <h1>Sculpting hair into wearable art.</h1>
             <p>Experience premium styling, tailored coloring, and luxury hair treatments designed to elevate your natural confidence.</p>
-            <a href="#book" class="cta-btn large">Reserve an Experience</a>
         </div>
         <div class="hero-image">
             <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=800&q=80" alt="Luxury Salon Interior">
@@ -35,7 +49,7 @@
             <span>Our Expertise</span>
             <h2>Signature Services</h2>
         </div>
-        
+
         <div class="services-grid">
             <div class="service-card">
                 <h3>Design & Cut</h3>
@@ -55,88 +69,166 @@
         </div>
     </section>
 
-    <section id="bookings" class="bookings-section">
+    <section id="gallery" class="lookbook-section">
         <div class="section-title">
-            <span>Your Appointments</span>
-            <h2>Bookings Dashboard</h2>
+            <span>Style Journal</span>
+            <h2>Lookbook</h2>
         </div>
-        
-        <div class="dashboard-container">
-            <div class="dashboard-stats">
-                <div class="stat-card">
-                    <span class="stat-label">Total Bookings</span>
-                    <h3 class="stat-number" id="totalBookingsCount">0</h3>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Upcoming</span>
-                    <h3 class="stat-number" id="upcomingBookingsCount">0</h3>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label">Most Popular</span>
-                    <h3 class="stat-number" id="popularService">—</h3>
+
+        <div class="lookbook-grid">
+            <div class="lookbook-card lookbook-large">
+                <div class="lookbook-overlay">
+                    <span>Runway Edit</span>
+                    <h3>Soft Layers</h3>
                 </div>
             </div>
-
-            <div class="bookings-list-container">
-                <div class="bookings-filter">
-                    <button class="filter-btn active" data-filter="all">All Bookings</button>
-                    <button class="filter-btn" data-filter="upcoming">Upcoming</button>
-                    <button class="filter-btn" data-filter="past">Past</button>
+            <div class="lookbook-card lookbook-two">
+                <div class="lookbook-overlay">
+                    <span>Editorial</span>
+                    <h3>Glossy Finish</h3>
                 </div>
-                
-                <div id="bookingsList" class="bookings-list">
-                    <!-- Bookings will be dynamically added here -->
-                </div>
-                
-                <div id="noBookingsMessage" class="no-bookings">
-                    <p>No bookings yet. <a href="#book" class="cta-btn small">Book now!</a></p>
+            </div>
+            <div class="lookbook-card lookbook-three">
+                <div class="lookbook-overlay">
+                    <span>Salon Favorite</span>
+                    <h3>Modern Texture</h3>
                 </div>
             </div>
         </div>
     </section>
 
-    <div id="bookingModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeBooking()">&times;</span>
-            <h2>Reserve Your Experience</h2>
-            <p>Select your preferred service and time.</p>
-            
-            <form id="salonBookingForm" onsubmit="handleBooking(event)">
-                <div class="form-group">
-                    <label for="customerName">Full Name</label>
-                    <input type="text" id="customerName" placeholder="Enter your full name" required>
+    <section id="about" class="team-section">
+        <div class="section-title">
+            <span>Meet the Artists</span>
+            <h2>Our Team</h2>
+        </div>
+
+        <div class="team-grid">
+            <div class="team-card">
+                <div class="team-photo team-photo-one"></div>
+                <h3>Leona Hart</h3>
+                <p>Creative color specialist focused on dimensional brilliance and tailored finishes.</p>
+            </div>
+            <div class="team-card">
+                <div class="team-photo team-photo-two"></div>
+                <h3>Amara Lee</h3>
+                <p>Precision cutting artist known for polished silhouettes and elevated everyday styling.</p>
+            </div>
+            <div class="team-card">
+                <div class="team-photo team-photo-three"></div>
+                <h3>Jamal Grant</h3>
+                <p>Luxury treatment expert blending restorative rituals with modern hair health science.</p>
+            </div>
+        </div>
+    </section>
+
+    <div id="adminLoginModal" class="admin-login-modal" aria-hidden="true">
+        <div class="admin-login-card" id="adminLoginCard">
+            <div class="admin-login-header">
+                <span>Secure Access</span>
+                <h2>Admin Login</h2>
+            </div>
+
+            <div id="authBox" class="auth-box">
+                <div class="auth-status-row">
+                    <div>
+                        <p class="auth-label">Current user</p>
+                        <h3 id="authUserDisplay">Not signed in</h3>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="service">Select Service</label>
-                    <select id="service" required>
-                        <option value="cut">Design & Cut — $85</option>
-                        <option value="color">Aesthetic Color — $160</option>
-                        <option value="therapy">Revitalizing Therapy — $70</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="date">Preferred Date</label>
-                    <input type="date" id="date" required>
-                </div>
-                <div class="form-group">
-                    <label for="time">Preferred Time</label>
-                    <input type="time" id="time" required>
-                </div>
-                <button type="submit" class="cta-btn large form-submit">Confirm Booking</button>
-            </form>
+
+                <form id="authForm" class="auth-form">
+                    <div class="auth-field auth-role-field">
+                        <label for="authRole">Login as</label>
+                        <select id="authRole">
+                            <option value="client">Client</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="authEmail">Email</label>
+                        <input id="authEmail" type="email" placeholder="name@example.com" required>
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="authPassword">Password</label>
+                        <input id="authPassword" type="password" placeholder="Enter password" required>
+                    </div>
+
+                    <button type="submit" class="cta-btn small auth-submit">Login</button>
+                </form>
+
+                <p class="auth-hint">
+                    Demo access: admin@aurora.com / admin123 or alice@aurora.com / client123
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- Custom Confirmation Modal -->
-    <div id="confirmationModal" class="confirmation-modal">
-        <div class="confirmation-content">
-            <div class="confirmation-icon">✨</div>
-            <h2 id="confirmationTitle">Appointment Confirmed!</h2>
-            <div id="confirmationDetails" class="confirmation-details">
-                <!-- Details will be filled dynamically -->
+    <section class="client-dashboard" id="dashboard">
+        <div class="section-title">
+            <span>Client Access</span>
+            <h2>My Bookings</h2>
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <span class="stat-label">Upcoming</span>
+                <h3 id="upcomingBookingsCount">0</h3>
             </div>
-            <p class="confirmation-message">We look forward to styling you!</p>
-            <button onclick="closeConfirmation()" class="cta-btn large">Done</button>
+            <div class="stat-card">
+                <span class="stat-label">Past</span>
+                <h3 id="pastBookingsCount">0</h3>
+            </div>
+        </div>
+
+        <div id="bookingsList" class="bookings-list"></div>
+        <div id="emptyBookingsMessage" class="empty-bookings">No bookings yet. Use Book Now to create your first appointment.</div>
+    </section>
+
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <button type="button" class="close-btn" aria-label="Close booking form">&times;</button>
+            <h2 id="bookingModalTitle">Book Your Appointment</h2>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label for="bookingClientName">Client Name</label>
+                    <input id="bookingClientName" type="text" placeholder="Enter full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingService">Service</label>
+                    <select id="bookingService">
+                        <option value="Design & Cut">Design & Cut — $85</option>
+                        <option value="Aesthetic Color">Aesthetic Color — $160</option>
+                        <option value="Revitalizing Therapy">Revitalizing Therapy — $70</option>
+                        <option value="Consultation">Consultation — Complimentary</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingDate">Appointment Date</label>
+                    <input id="bookingDate" type="date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingTime">Appointment Time</label>
+                    <input id="bookingTime" type="time" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingPhone">Phone Number</label>
+                    <input id="bookingPhone" type="tel" placeholder="Optional">
+                </div>
+
+                <div class="form-group">
+                    <label for="bookingEmail">Email</label>
+                    <input id="bookingEmail" type="email" placeholder="Optional">
+                </div>
+
+                <button type="submit" class="cta-btn large form-submit">Confirm Booking</button>
+            </form>
         </div>
     </div>
 
